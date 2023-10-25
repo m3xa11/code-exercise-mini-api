@@ -1,1 +1,1 @@
-# code-exercise-mini-api
+# Some Code exercise
