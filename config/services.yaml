@@ -4,9 +4,54 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    external.api.uri: "https://randomuser.me/"
+    external.api.timeout: 5.0
 
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        public: true
+
+    app.guzzle.client.random_user:
+        class: GuzzleHttp\Client
+        arguments:
+            -
+                base_uri: '%external.api.uri%'
+                timeout: '%external.api.timeout%'
+
+    app.external_client.random_user:
+        class: MiniApi\ExternalClient\RandomUser\RandomUserApiClient
+        arguments:
+            - '@app.guzzle.client.random_user'
+            - '@app.external_client.random_user.data.parser'
+
+    app.external_client.random_user.data.parser:
+        class: MiniApi\ExternalClient\RandomUser\Data\Parser\RandomUserDataParser
+        arguments:
+            - '@app.user_data.factory'
+
+    app.user_data.factory:
+        class: MiniApi\User\Data\Factory\UserDataFactory
+
+    app.user_data.provider:
+        class: MiniApi\User\Data\Provider\UserDataProvider
+        arguments:
+            - '@app.external_client.random_user'
+
+    app.response.xml.factory:
+        class: MiniApi\Response\Factory\XmlResponseFactory
+        arguments:
+            - '@serializer'
+
+    MiniApi\Controller\ApiController:
+        class: MiniApi\Controller\ApiController
+        arguments:
+            - '@app.user_data.provider'
+            - '@app.response.xml.factory'
+
+    MiniApi\Controller\ErrorController:
+        class: MiniApi\Controller\ErrorController
+        arguments:
+            - '@app.response.xml.factory'

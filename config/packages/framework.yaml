@@ -18,6 +18,8 @@ framework:
     php_errors:
         log: true
 
+    error_controller: MiniApi\Controller\ErrorController::show
+
 when@test:
     framework:
         test: true

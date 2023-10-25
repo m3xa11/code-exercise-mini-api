@@ -4,5 +4,5 @@ when@dev:
         prefix: /_error
 
 index:
-    path: /
-    controller: MiniApi\Controller\ApiController::index
+    path: /users
+    controller: MiniApi\Controller\ApiController::users
